@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Services\Exceptions\RouteServiceException;
 use InvalidArgumentException;
 
 class RouteOptimizer
@@ -59,7 +60,19 @@ class RouteOptimizer
             'savings_percent' => $savings,
             'history' => $aco->history(),
             'google_maps_url' => $this->buildGoogleMapsUrl($route, $coordinates),
+            'route_geometry' => $this->roadGeometry($route, $coordinates),
         ];
+    }
+
+    private function roadGeometry(array $route, array $coordinates): ?array
+    {
+        $ordered = array_map(fn (int $i) => $coordinates[$i], $route);
+
+        try {
+            return $this->osrm->route($ordered);
+        } catch (RouteServiceException) {
+            return null;
+        }
     }
 
     private function routeCost(array $distances, array $route): float

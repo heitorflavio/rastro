@@ -134,6 +134,7 @@
                     const coords = @js($resultado['coordinates']);
                     const route = @js($resultado['route']);
                     const addresses = @js($resultado['addresses']);
+                    const geometry = @js($resultado['route_geometry'] ?? null);
 
                     const initMap = () => {
                         if (typeof L === 'undefined') {
@@ -150,8 +151,13 @@
                             attribution: '© OpenStreetMap',
                         }).addTo(map);
 
+                        // Polilinha: geometria real das ruas (OSRM /route) ou retas como fallback
+                        const polylineLatLngs = geometry
+                            ? geometry.map(p => [p.lat, p.lon])
+                            : route.map(i => [coords[i].lat, coords[i].lon]);
+                        L.polyline(polylineLatLngs, { color: '#10b981', weight: 4, opacity: 0.85 }).addTo(map);
+
                         const latLngs = route.map(i => [coords[i].lat, coords[i].lon]);
-                        L.polyline(latLngs, { color: '#10b981', weight: 4, opacity: 0.85 }).addTo(map);
 
                         route.forEach((idx, pos) => {
                             const isBase = pos === 0 || pos === route.length - 1;

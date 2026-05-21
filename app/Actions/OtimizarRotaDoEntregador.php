@@ -2,9 +2,9 @@
 
 namespace App\Actions;
 
-use App\Models\Entrega;
 use App\Models\Entregador;
 use App\Services\AntColonyOptimizer;
+use App\Services\Exceptions\RouteServiceException;
 use App\Services\OsrmClient;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
@@ -63,8 +63,24 @@ class OtimizarRotaDoEntregador
             'savings_percent' => $savings,
             'history' => $aco->history(),
             'google_maps_url' => $this->urlGoogleMaps($closedRoute, $points),
+            'route_geometry' => $this->geometriaPelasRuas($closedRoute, $points),
             'entregas' => $entregas->sortBy('ordem_na_rota')->values(),
         ];
+    }
+
+    /**
+     * Busca a geometria real da rota pelas ruas no OSRM. Retorna null se a chamada falhar
+     * (a view cai num fallback de linhas retas entre os pontos).
+     */
+    private function geometriaPelasRuas(array $closedRoute, array $points): ?array
+    {
+        $ordenados = array_map(fn (int $i) => $points[$i], $closedRoute);
+
+        try {
+            return $this->osrm->route($ordenados);
+        } catch (RouteServiceException) {
+            return null;
+        }
     }
 
     private function custoRotaOrdemOriginal(array $distances): float

@@ -163,6 +163,7 @@
                     const coords = @js($result['coordinates']);
                     const route = @js($result['route']);
                     const addresses = @js($result['addresses']);
+                    const geometry = @js($result['route_geometry'] ?? null);
 
                     const initMap = () => {
                         if (typeof L === 'undefined') {
@@ -179,9 +180,12 @@
                             attribution: '© OpenStreetMap',
                         }).addTo(map);
 
-                        const latLngs = route.map(i => [coords[i].lat, coords[i].lon]);
+                        const polylineLatLngs = geometry
+                            ? geometry.map(p => [p.lat, p.lon])
+                            : route.map(i => [coords[i].lat, coords[i].lon]);
+                        L.polyline(polylineLatLngs, { color: '#10b981', weight: 4, opacity: 0.85 }).addTo(map);
 
-                        L.polyline(latLngs, { color: '#10b981', weight: 4, opacity: 0.85 }).addTo(map);
+                        const latLngs = route.map(i => [coords[i].lat, coords[i].lon]);
 
                         route.forEach((idx, pos) => {
                             const isBase = pos === 0 || pos === route.length - 1;

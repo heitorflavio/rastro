@@ -96,3 +96,77 @@ test('lança exceção quando entregador tem menos de 2 entregas atribuídas', f
 
     app(OtimizarRotaDoEntregador::class)->execute($entregador);
 })->throws(InvalidArgumentException::class);
+
+test('inclui route_geometry quando OSRM /route responde', function () {
+    Http::fake([
+        'router.project-osrm.org/table/*' => Http::response([
+            'code' => 'Ok',
+            'distances' => [
+                [0, 1000, 1414, 1000],
+                [1000, 0, 1000, 1414],
+                [1414, 1000, 0, 1000],
+                [1000, 1414, 1000, 0],
+            ],
+            'durations' => [
+                [0, 60, 90, 60],
+                [60, 0, 60, 90],
+                [90, 60, 0, 60],
+                [60, 90, 60, 0],
+            ],
+        ]),
+        'router.project-osrm.org/route/*' => Http::response([
+            'code' => 'Ok',
+            'routes' => [[
+                'geometry' => [
+                    'type' => 'LineString',
+                    'coordinates' => [
+                        [0, 0], [0.5, 0.5], [1, 1], [1, 0], [0, 0],
+                    ],
+                ],
+            ]],
+        ]),
+    ]);
+
+    $entregador = Entregador::factory()->create(['lat_base' => 0, 'lon_base' => 0]);
+    Entrega::factory()->atribuida($entregador->id)->create(['lat' => 0, 'lon' => 1]);
+    Entrega::factory()->atribuida($entregador->id)->create(['lat' => 1, 'lon' => 1]);
+    Entrega::factory()->atribuida($entregador->id)->create(['lat' => 1, 'lon' => 0]);
+
+    $result = app(OtimizarRotaDoEntregador::class)->execute($entregador);
+
+    expect($result['route_geometry'])
+        ->toBeArray()
+        ->toHaveCount(5)
+        ->and($result['route_geometry'][0])->toMatchArray(['lat' => 0, 'lon' => 0]);
+});
+
+test('cai em route_geometry null quando OSRM /route falha (graceful fallback)', function () {
+    Http::fake([
+        'router.project-osrm.org/table/*' => Http::response([
+            'code' => 'Ok',
+            'distances' => [
+                [0, 1000, 1414, 1000],
+                [1000, 0, 1000, 1414],
+                [1414, 1000, 0, 1000],
+                [1000, 1414, 1000, 0],
+            ],
+            'durations' => [
+                [0, 60, 90, 60],
+                [60, 0, 60, 90],
+                [90, 60, 0, 60],
+                [60, 90, 60, 0],
+            ],
+        ]),
+        'router.project-osrm.org/route/*' => Http::response(['code' => 'NoRoute']),
+    ]);
+
+    $entregador = Entregador::factory()->create(['lat_base' => 0, 'lon_base' => 0]);
+    Entrega::factory()->atribuida($entregador->id)->create(['lat' => 0, 'lon' => 1]);
+    Entrega::factory()->atribuida($entregador->id)->create(['lat' => 1, 'lon' => 1]);
+    Entrega::factory()->atribuida($entregador->id)->create(['lat' => 1, 'lon' => 0]);
+
+    $result = app(OtimizarRotaDoEntregador::class)->execute($entregador);
+
+    expect($result)->toHaveKey('route_geometry')
+        ->and($result['route_geometry'])->toBeNull();
+});
