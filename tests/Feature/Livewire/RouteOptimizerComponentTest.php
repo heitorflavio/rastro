@@ -29,8 +29,13 @@ beforeEach(function () {
     ]);
 });
 
-test('a página inicial responde com 200', function () {
-    $this->get('/')->assertOk();
+test('o otimizador manual responde com 200 quando autenticado', function () {
+    $this->actingAs(\App\Models\User::factory()->create());
+    $this->get('/otimizador-manual')->assertOk();
+});
+
+test('o otimizador manual redireciona para login quando não autenticado', function () {
+    $this->get('/otimizador-manual')->assertRedirect('/login');
 });
 
 test('renderiza com 3 linhas de endereço vazias por padrão', function () {

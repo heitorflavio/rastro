@@ -9,8 +9,8 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-#[Title('Rastro — Otimizador de rotas')]
-#[Layout('components.layouts.rastro')]
+#[Title('Otimizador manual')]
+#[Layout('layouts.app')]
 class RouteOptimizer extends Component
 {
     public array $addresses = ['', '', ''];

@@ -11,7 +11,16 @@
       "PowerShell(php ./vendor/bin/pest tests/Feature/Services tests/Feature/Livewire 2>&1)",
       "PowerShell(git stash -u)",
       "PowerShell(php ./vendor/bin/pest --filter \"RegistrationTest\" 2>&1)",
-      "PowerShell(git stash pop)"
+      "PowerShell(git stash pop)",
+      "PowerShell(php ./vendor/bin/pest tests/Feature/Actions 2>&1)",
+      "PowerShell(php ./vendor/bin/pest tests/Feature/Actions --filter \"ignora_entregas\" 2>&1)",
+      "PowerShell(php ./vendor/bin/pest tests/Feature/Actions/OtimizarRotaDoEntregadorTest.php --colors=never 2>&1)",
+      "PowerShell(php ./vendor/bin/pest tests/Feature/Actions/OtimizarRotaDoEntregadorTest.php --printer=\"default\" 2>&1)",
+      "PowerShell($env:NO_COLOR='1'; php ./vendor/bin/pest tests/Feature/Actions/OtimizarRotaDoEntregadorTest.php --filter \"ignora_entregas_com_status\" --bail 2>&1 | Select-Object -Last 80)",
+      "PowerShell(php ./vendor/bin/pest tests/Feature/Entregadores 2>&1)",
+      "PowerShell(php ./vendor/bin/pest tests/Feature/Entregas 2>&1)",
+      "PowerShell(php ./vendor/bin/pest tests/Feature/Roteirizacao 2>&1)",
+      "PowerShell(php ./vendor/bin/pest tests/Feature/Seeders 2>&1)"
     ]
   }
 }
