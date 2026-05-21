@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./vendor/bin/pest tests/Feature/Services/AntColonyOptimizerTest.php)",
+      "PowerShell(php ./vendor/bin/pest tests/Feature/Services/AntColonyOptimizerTest.php 2>&1)",
+      "PowerShell(php ./vendor/bin/pest tests/Feature/Services/GeocoderTest.php 2>&1)",
+      "PowerShell(php ./vendor/bin/pest tests/Feature/Services/OsrmClientTest.php 2>&1)",
+      "PowerShell(php ./vendor/bin/pest tests/Feature/Services/RouteOptimizerTest.php 2>&1)",
+      "PowerShell(php ./vendor/bin/pest tests/Feature/Livewire 2>&1)",
+      "PowerShell(php ./vendor/bin/pest 2>&1)",
+      "PowerShell(php ./vendor/bin/pest tests/Feature/Services tests/Feature/Livewire 2>&1)",
+      "PowerShell(git stash -u)",
+      "PowerShell(php ./vendor/bin/pest --filter \"RegistrationTest\" 2>&1)",
+      "PowerShell(git stash pop)"
+    ]
+  }
+}
