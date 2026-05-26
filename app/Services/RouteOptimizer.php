@@ -46,6 +46,9 @@ class RouteOptimizer
         $route = $best['route'];
         $route[] = 0; // volta para base
 
+        $originalRoute = range(0, count($distances) - 1);
+        $originalRoute[] = 0; // volta para base na ordem digitada
+
         $originalCost = $this->routeCost($distances, range(0, count($distances) - 1));
         $savings = $originalCost > 0
             ? max(0, (1 - $best['cost'] / $originalCost) * 100)
@@ -53,6 +56,7 @@ class RouteOptimizer
 
         return [
             'route' => $route,
+            'original_route' => $originalRoute,
             'addresses' => $resolvedNames,
             'coordinates' => $coordinates,
             'cost_meters' => $best['cost'],
@@ -61,6 +65,7 @@ class RouteOptimizer
             'history' => $aco->history(),
             'google_maps_url' => $this->buildGoogleMapsUrl($route, $coordinates),
             'route_geometry' => $this->roadGeometry($route, $coordinates),
+            'original_route_geometry' => $this->roadGeometry($originalRoute, $coordinates),
         ];
     }
 

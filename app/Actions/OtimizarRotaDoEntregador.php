@@ -33,6 +33,7 @@ class OtimizarRotaDoEntregador
         $best = $aco->optimize();
 
         $closedRoute = [...$best['route'], 0];
+        $originalRoute = [...range(0, count($points) - 1), 0];
 
         DB::transaction(function () use ($entregas, $best) {
             foreach ($best['route'] as $position => $pointIndex) {
@@ -56,6 +57,7 @@ class OtimizarRotaDoEntregador
 
         return [
             'route' => $closedRoute,
+            'original_route' => $originalRoute,
             'addresses' => $addresses,
             'coordinates' => $points,
             'cost_meters' => $best['cost'],
@@ -64,6 +66,7 @@ class OtimizarRotaDoEntregador
             'history' => $aco->history(),
             'google_maps_url' => $this->urlGoogleMaps($closedRoute, $points),
             'route_geometry' => $this->geometriaPelasRuas($closedRoute, $points),
+            'original_route_geometry' => $this->geometriaPelasRuas($originalRoute, $points),
             'entregas' => $entregas->sortBy('ordem_na_rota')->values(),
         ];
     }

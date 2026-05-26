@@ -126,7 +126,12 @@
 
         {{-- Mapa interativo --}}
         <flux:card>
-            <flux:heading size="lg" class="mb-3">Mapa da rota</flux:heading>
+            <div class="mb-3 flex items-baseline justify-between gap-3">
+                <flux:heading size="lg">Mapa da rota otimizada</flux:heading>
+                <flux:text size="sm" class="text-emerald-600 dark:text-emerald-400 font-semibold">
+                    {{ $km($result['cost_meters']) }}
+                </flux:text>
+            </div>
             <div wire:ignore x-data x-init="const coords = @js($result['coordinates']);
             const route = @js($result['route']);
             const addresses = @js($result['addresses']);
@@ -165,6 +170,65 @@
                     });
                     L.marker([coords[idx].lat, coords[idx].lon], { icon })
                         .bindPopup(`<b>${isBase ? 'Base' : 'Parada ' + pos}</b><br>${addresses[idx]}`)
+                        .addTo(map);
+                });
+
+                map.fitBounds(L.latLngBounds(latLngs).pad(0.15));
+            };
+
+            initMap();"
+                class="h-96 w-full rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-700"></div>
+        </flux:card>
+
+        {{-- Mapa da rota original (sem otimização) --}}
+        <flux:card>
+            <div class="mb-3 flex items-baseline justify-between gap-3">
+                <flux:heading size="lg">Mapa da rota original</flux:heading>
+                <flux:text size="sm" class="text-orange-600 dark:text-orange-400 font-semibold">
+                    {{ $km($result['original_cost_meters']) }}
+                </flux:text>
+            </div>
+            <flux:text size="sm" class="text-zinc-500 mb-3">
+                Trajeto visitando as paradas na ordem digitada — para comparar com a otimizada.
+            </flux:text>
+            <div wire:ignore x-data x-init="const coords = @js($result['coordinates']);
+            const route = @js($result['original_route']);
+            const addresses = @js($result['addresses']);
+            const geometry = @js($result['original_route_geometry'] ?? null);
+
+            const initMap = () => {
+                if (typeof L === 'undefined') {
+                    return setTimeout(initMap, 100);
+                }
+
+                if ($el._map) { $el._map.remove(); }
+
+                const map = L.map($el).setView([coords[0].lat, coords[0].lon], 13);
+                $el._map = map;
+
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19,
+                    attribution: '© OpenStreetMap',
+                }).addTo(map);
+
+                const polylineLatLngs = geometry ?
+                    geometry.map(p => [p.lat, p.lon]) :
+                    route.map(i => [coords[i].lat, coords[i].lon]);
+                L.polyline(polylineLatLngs, { color: '#f97316', weight: 4, opacity: 0.85, dashArray: '8 6' }).addTo(map);
+
+                const latLngs = route.map(i => [coords[i].lat, coords[i].lon]);
+
+                route.forEach((idx, pos) => {
+                    const isBase = pos === 0 || pos === route.length - 1;
+                    const label = isBase ? '🏠' : String(pos);
+                    const icon = L.divIcon({
+                        className: '',
+                        html: `<div style=&quot;background:${isBase ? '#f97316' : '#71717a'};color:white;border-radius:9999px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:700;border:2px solid white;box-shadow:0 1px 3px rgba(0,0,0,.4)&quot;>${label}</div>`,
+                        iconSize: [28, 28],
+                        iconAnchor: [14, 14],
+                    });
+                    L.marker([coords[idx].lat, coords[idx].lon], { icon })
+                        .bindPopup(`<b>${isBase ? 'Base' : 'Parada ' + pos + ' (ordem original)'}</b><br>${addresses[idx]}`)
                         .addTo(map);
                 });
 
